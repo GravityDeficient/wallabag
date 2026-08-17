@@ -271,6 +271,17 @@ entry:
             clear: Clear
             filter: Filter
     view:
+        tts:
+            idle: 'Listen'
+            play: 'Play'
+            pause: 'Pause'
+            seek: 'Seek'
+            speed: 'Playback speed'
+            follow: 'Follow along'
+            preparing: 'Preparing audio'
+            queued: 'Queued for narration'
+            ready: 'Ready to play'
+            error: 'Audio unavailable'
         left_menu:
             back_to_top: Back to top
             back_to_homepage: Back

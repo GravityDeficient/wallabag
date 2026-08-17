@@ -1,0 +1,73 @@
+{#
+    Read-along TTS player.
+
+    Everything for the feature lives here so that entry.html.twig needs exactly
+    one added line, which is what keeps rebasing onto upstream releases cheap.
+
+    The player talks to the wallabag-tts service directly rather than through a
+    Symfony controller. That is deliberate: php-fpm is configured with
+    pm.max_children = 5, so proxying audio (or even polling status) through PHP
+    would tie up a fifth of Wallabag's total request capacity per listener.
+    The service is mounted at the same origin by the ingress, so it inherits
+    this host's Authelia session.
+#}
+{% if craue_setting('tts_enabled') %}
+<div id="tts-player" class="tts-player" data-state="idle">
+    <button type="button" id="tts-toggle" class="btn-flat waves-effect tts-btn"
+            title="{{ 'entry.view.tts.play'|trans }}"
+            aria-label="{{ 'entry.view.tts.play'|trans }}">
+        <i class="material-icons">play_arrow</i>
+    </button>
+
+    <div class="tts-body">
+        <div class="tts-status" id="tts-status">{{ 'entry.view.tts.idle'|trans }}</div>
+        <div class="tts-scrub">
+            <input type="range" id="tts-seek" min="0" max="0" value="0" step="1"
+                   aria-label="{{ 'entry.view.tts.seek'|trans }}">
+        </div>
+        <div class="tts-times">
+            <span id="tts-current">0:00</span> / <span id="tts-duration">0:00</span>
+        </div>
+    </div>
+
+    <div class="tts-actions">
+        <button type="button" id="tts-follow" class="btn-flat waves-effect tts-btn tts-on"
+                title="{{ 'entry.view.tts.follow'|trans }}"
+                aria-label="{{ 'entry.view.tts.follow'|trans }}">
+            <i class="material-icons">vertical_align_center</i>
+        </button>
+        <select id="tts-rate" class="tts-rate" aria-label="{{ 'entry.view.tts.speed'|trans }}">
+            <option value="0.9">0.9x</option>
+            <option value="1" selected>1x</option>
+            <option value="1.15">1.15x</option>
+            <option value="1.3">1.3x</option>
+            <option value="1.5">1.5x</option>
+            <option value="1.75">1.75x</option>
+            <option value="2">2x</option>
+        </select>
+    </div>
+
+    <audio id="tts-audio" preload="none"></audio>
+</div>
+
+{# Twig -> JS handoff, mirroring the existing #annotationroutes island so the
+   JS never has to know how Wallabag builds URLs. #}
+<script id="ttsroutes" type="application/json">
+{
+    "entryId": {{ entry.id }},
+    "base": "{{ craue_setting('tts_base_path')|default('/tts') }}",
+    "title": {{ entry.title|default('')|json_encode|raw }},
+    "domain": {{ entry.domainName|default('')|json_encode|raw }},
+    "strings": {
+        "idle": {{ 'entry.view.tts.idle'|trans|json_encode|raw }},
+        "play": {{ 'entry.view.tts.play'|trans|json_encode|raw }},
+        "pause": {{ 'entry.view.tts.pause'|trans|json_encode|raw }},
+        "preparing": {{ 'entry.view.tts.preparing'|trans|json_encode|raw }},
+        "queued": {{ 'entry.view.tts.queued'|trans|json_encode|raw }},
+        "ready": {{ 'entry.view.tts.ready'|trans|json_encode|raw }},
+        "error": {{ 'entry.view.tts.error'|trans|json_encode|raw }}
+    }
+}
+</script>
+<script src="{{ asset('wallassets/tts' ~ (app.debug ? '.dev' : '') ~ '.js') }}" defer></script>
+{% endif %}

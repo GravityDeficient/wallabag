@@ -157,6 +157,18 @@ wallabag_core:
             name: shaarli_share_origin_url
             value: 0
             section: entry
+        # Read-along TTS. Reuses the existing "entry" section on purpose: adding
+        # a new section would mean editing the enum in
+        # CoreBundle/DependencyInjection/Configuration.php, which is upstream
+        # surface this feature does not otherwise touch.
+        -
+            name: tts_enabled
+            value: 0
+            section: entry
+        -
+            name: tts_base_path
+            value: /tts
+            section: entry
 
     default_ignore_origin_instance_rules:
         -

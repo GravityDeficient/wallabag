@@ -35,3 +35,5 @@ restricted_access: Enable authentication for paywalled websites
 api_user_registration: Turn on user registration via the API
 store_article_headers: Enable if wallabag stores HTTP headers for each article
 shaarli_share_origin_url: Enable sharing origin URL to Shaarli, if the service is enabled
+tts_enabled: Enable read-along text to speech
+tts_base_path: Path where the TTS service is mounted (same host as wallabag)

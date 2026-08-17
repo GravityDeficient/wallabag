@@ -8,6 +8,11 @@ module.exports = {
   entry: {
     material: path.join(projectDir, './app/Resources/static/themes/material/index.js'),
     public: path.join(projectDir, './app/Resources/static/themes/_global/share.js'),
+    // Separate bundle rather than an import into material/index.js. The built
+    // assets in web/wallassets/ are committed, so folding this in would produce
+    // a minified-bundle conflict on every upstream release; as its own entry it
+    // emits new files and leaves material.js byte-identical to upstream.
+    tts: path.join(projectDir, './app/Resources/static/themes/material/tts/index.js'),
   },
   output: {
     filename: '[name].js',

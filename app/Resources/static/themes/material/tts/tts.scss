@@ -1,0 +1,124 @@
+/*
+ * Read-along player styles.
+ *
+ * Scoped entirely under .tts-player and .tts-s so nothing here can leak into
+ * Wallabag's own Materialize styles, which keeps upstream CSS changes from
+ * interacting with this file.
+ */
+
+.tts-player {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 18px;
+  padding: 10px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.02);
+
+  .tts-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    min-width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    opacity: 0.55;
+
+    &.tts-on { opacity: 1; }
+    i { font-size: 26px; }
+  }
+
+  #tts-toggle {
+    opacity: 1;
+    // Large enough to hit reliably on a phone without looking out of place on
+    // a desktop.
+    min-width: 48px;
+    height: 48px;
+    i { font-size: 32px; }
+  }
+
+  .tts-body {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .tts-status {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tts-scrub input[type='range'] {
+    width: 100%;
+    margin: 0;
+    // Materialize restyles range inputs globally and its thumb positioning
+    // fights a flex parent; the native control is predictable here.
+    -webkit-appearance: auto;
+    appearance: auto;
+  }
+
+  .tts-times {
+    font-size: 0.75rem;
+    opacity: 0.6;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tts-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .tts-rate {
+    display: block;
+    width: auto;
+    height: 32px;
+    padding: 0 4px;
+    font-size: 0.8rem;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    background: transparent;
+  }
+
+  // The player is meaningless without audio; hide it rather than showing dead
+  // controls if the service never answered.
+  &[data-state='error'] .tts-scrub,
+  &[data-state='error'] .tts-times {
+    display: none;
+  }
+}
+
+/* Spoken-sentence highlight. Kept to a background wash: an underline or colour
+ * change fights the article's own link styling, and a border shifts layout by a
+ * pixel on every sentence change, which reads as the text twitching. */
+.tts-s.tts-active {
+  background: rgba(255, 213, 79, 0.45);
+  border-radius: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tts-player {
+    border-color: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.04);
+  }
+  .tts-rate {
+    color: inherit;
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+  .tts-s.tts-active {
+    background: rgba(255, 213, 79, 0.28);
+  }
+}
+
+@media (max-width: 600px) {
+  .tts-player {
+    gap: 8px;
+    padding: 8px;
+    .tts-rate { display: none; }
+  }
+}
