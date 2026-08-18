@@ -39,9 +39,18 @@
     min-width: 40px;
     height: 40px;
     border-radius: 50%;
-    opacity: 0.55;
 
-    &.tts-on { opacity: 1; }
+    // Was 0.55, which read as disabled rather than secondary -- especially on a
+    // dark background where a faded icon nearly vanishes.
+    opacity: 0.8;
+    color: inherit;
+
+    &:hover { opacity: 1; }
+
+    &.tts-on {
+      opacity: 1;
+      color: #2196f3;
+    }
     i { font-size: 24px; }
   }
 
@@ -100,10 +109,19 @@
     padding: 0 4px;
     margin: 0;
     font-size: 0.8rem;
-    color: inherit;
+    color: #212121;
     border: 1px solid rgb(0 0 0 / 24%);
     border-radius: 4px;
-    background: transparent;
+
+    // Explicit rather than transparent: the native option popup inherits the
+    // select's own background, and a transparent one renders against whatever
+    // the OS decides, which is unreadable in dark mode.
+    background-color: #fff;
+
+    option {
+      color: #212121;
+      background-color: #fff;
+    }
   }
 
   // The player is meaningless without audio; hide dead controls rather than
@@ -148,19 +166,46 @@
   border-radius: 2px;
 }
 
-@media (prefers-color-scheme: dark) {
+/* Wallabag's dark mode is a .dark-theme class on <html>, toggled manually with
+ * a light/dark/auto switch (index.js). prefers-color-scheme only feeds the
+ * "auto" branch of that switch, so keying off the media query directly meant
+ * these styles never applied when dark was selected on a light-mode OS.
+ * Colours below are wallabag's own: #131716 panels, #232323 rows, #dfdfdf text. */
+.dark-theme {
   .tts-player {
-    border-top-color: rgb(255 255 255 / 18%);
-    background: #242424;
-    box-shadow: 0 -2px 8px rgb(0 0 0 / 50%);
-  }
+    border-top-color: rgb(255 255 255 / 14%);
+    background: #131716;
+    box-shadow: 0 -2px 8px rgb(0 0 0 / 60%);
+    color: #dfdfdf;
 
-  .tts-player .tts-select {
-    border-color: rgb(255 255 255 / 30%);
+    .tts-btn {
+      color: #dfdfdf;
+
+      &.tts-on { color: #64b5f6; }
+    }
+
+    .tts-status,
+    .tts-times {
+      color: #dfdfdf;
+    }
+
+    .tts-select {
+      color: #dfdfdf;
+      border-color: rgb(255 255 255 / 28%);
+      background-color: #232323;
+
+      option {
+        color: #dfdfdf;
+        background-color: #232323;
+      }
+    }
   }
 
   .tts-s.tts-active {
-    background: rgb(255 213 79 / 28%);
+    // Lower alpha than light mode: the same wash over dark text is glaring, and
+    // the text itself must stay the brighter element.
+    background: rgb(255 213 79 / 22%);
+    color: #fff;
   }
 }
 
