@@ -35,6 +35,12 @@
         </div>
     </div>
 
+    {# The selects carry browser-default deliberately. material/index.js runs
+       $('select').material_select() on every page, which replaces a native
+       select with a Materialize widget and hides the original. The voice list
+       is fetched after that has already run, so its options would land in the
+       hidden element and the widget would stay empty. browser-default makes
+       Materialize skip the element (forms.js) and un-hides it (_select.scss). #}
     <div class="tts-actions">
         <button type="button" id="tts-follow" class="btn-flat waves-effect tts-btn tts-on"
                 title="{{ 'entry.view.tts.follow'|trans }}"
@@ -43,13 +49,13 @@
         </button>
         {# Populated from the service's /voices at load. Switching voice is a
            different render, not a playback setting, so it re-checks status. #}
-        <select id="tts-voice" class="tts-rate" aria-label="{{ 'entry.view.tts.voice'|trans }}"></select>
+        <select id="tts-voice" class="browser-default tts-select" aria-label="{{ 'entry.view.tts.voice'|trans }}"></select>
         <button type="button" id="tts-regen" class="btn-flat waves-effect tts-btn"
                 title="{{ 'entry.view.tts.regenerate'|trans }}"
                 aria-label="{{ 'entry.view.tts.regenerate'|trans }}">
             <i class="material-icons">refresh</i>
         </button>
-        <select id="tts-rate" class="tts-rate" aria-label="{{ 'entry.view.tts.speed'|trans }}">
+        <select id="tts-rate" class="browser-default tts-select" aria-label="{{ 'entry.view.tts.speed'|trans }}">
             <option value="0.9">0.9x</option>
             <option value="1" selected>1x</option>
             <option value="1.15">1.15x</option>

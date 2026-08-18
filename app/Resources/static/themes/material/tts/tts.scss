@@ -1,20 +1,35 @@
 /*
  * Read-along player styles.
  *
- * Scoped entirely under .tts-player and .tts-s so nothing here can leak into
- * Wallabag's own Materialize styles, which keeps upstream CSS changes from
- * interacting with this file.
+ * Scoped under .tts-player and .tts-s so nothing here can leak into Wallabag's
+ * own Materialize styles, which keeps upstream CSS changes from interacting
+ * with this file.
  */
 
+/* Pinned to the bottom of the viewport rather than sitting inline above the
+ * article. Read-along means the controls are needed at any scroll position,
+ * and a bar that scrolls away is unusable halfway through a long piece.
+ * Bottom rather than top: it stays in thumb reach on a phone and does not
+ * cover the headline. */
 .tts-player {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  // Above article content, below Materialize's modals/dropdowns (which sit at
+  // 100+) so an open voice list is never trapped behind the bar.
+  z-index: 90;
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 0 0 18px;
-  padding: 10px 12px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.02);
+  padding: 8px 16px;
+  border-top: 1px solid rgb(0 0 0 / 12%);
+  background: #fff;
+  box-shadow: 0 -2px 8px rgb(0 0 0 / 12%);
+
+  // Keeps controls clear of the home indicator on phones.
+  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
 
   .tts-btn {
     display: inline-flex;
@@ -27,13 +42,13 @@
     opacity: 0.55;
 
     &.tts-on { opacity: 1; }
-    i { font-size: 26px; }
+    i { font-size: 24px; }
   }
 
   #tts-toggle {
     opacity: 1;
-    // Large enough to hit reliably on a phone without looking out of place on
-    // a desktop.
+
+    // Large enough to hit reliably on a phone without dominating on desktop.
     min-width: 48px;
     height: 48px;
     i { font-size: 32px; }
@@ -56,9 +71,9 @@
   .tts-scrub input[type='range'] {
     width: 100%;
     margin: 0;
+
     // Materialize restyles range inputs globally and its thumb positioning
     // fights a flex parent; the native control is predictable here.
-    -webkit-appearance: auto;
     appearance: auto;
   }
 
@@ -74,51 +89,72 @@
     gap: 6px;
   }
 
-  .tts-rate {
+  /* These carry .browser-default so Materialize leaves them alone -- see the
+   * comment in _tts_player.html.twig. That also means none of Materialize's
+   * select styling applies, so they are styled from scratch here. */
+  .tts-select {
     display: block;
     width: auto;
+    max-width: 130px;
     height: 32px;
     padding: 0 4px;
+    margin: 0;
     font-size: 0.8rem;
-    border: 1px solid rgba(0, 0, 0, 0.2);
+    color: inherit;
+    border: 1px solid rgb(0 0 0 / 24%);
     border-radius: 4px;
     background: transparent;
   }
 
-  // The player is meaningless without audio; hide it rather than showing dead
-  // controls if the service never answered.
+  // The player is meaningless without audio; hide dead controls rather than
+  // showing a scrubber that cannot move.
   &[data-state='error'] .tts-scrub,
   &[data-state='error'] .tts-times {
     display: none;
   }
 }
 
+/* Reserve room so the fixed bar never covers the end of the article. Applied
+ * to the article container rather than body, because Materialize's own
+ * fixed-action-btn positioning is relative to body and shifts if body padding
+ * changes. */
+#article {
+  padding-bottom: 96px;
+}
+
 /* Spoken-sentence highlight. Kept to a background wash: an underline or colour
  * change fights the article's own link styling, and a border shifts layout by a
  * pixel on every sentence change, which reads as the text twitching. */
 .tts-s.tts-active {
-  background: rgba(255, 213, 79, 0.45);
+  background: rgb(255 213 79 / 45%);
   border-radius: 2px;
 }
 
 @media (prefers-color-scheme: dark) {
   .tts-player {
-    border-color: rgba(255, 255, 255, 0.18);
-    background: rgba(255, 255, 255, 0.04);
+    border-top-color: rgb(255 255 255 / 18%);
+    background: #242424;
+    box-shadow: 0 -2px 8px rgb(0 0 0 / 50%);
   }
-  .tts-rate {
-    color: inherit;
-    border-color: rgba(255, 255, 255, 0.3);
+
+  .tts-player .tts-select {
+    border-color: rgb(255 255 255 / 30%);
   }
+
   .tts-s.tts-active {
-    background: rgba(255, 213, 79, 0.28);
+    background: rgb(255 213 79 / 28%);
   }
 }
 
 @media (max-width: 600px) {
   .tts-player {
     gap: 8px;
-    padding: 8px;
-    .tts-rate { display: none; }
+    padding-left: 8px;
+    padding-right: 8px;
+
+    // Speed is the more expendable of the two on a narrow screen; the voice
+    // picker is the one there is no other way to reach.
+    #tts-rate { display: none; }
+    .tts-select { max-width: 96px; }
   }
 }
