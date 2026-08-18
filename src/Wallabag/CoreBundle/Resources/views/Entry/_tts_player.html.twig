@@ -12,6 +12,11 @@
     this host's Authelia session.
 #}
 {% if craue_setting('tts_enabled') %}
+{# Webpack extracts the SCSS into its own file, so importing it from the JS
+   entry point is not enough to get it onto the page -- without this the player
+   renders unstyled, which reads as broken rather than missing. Loaded here
+   rather than in layout.html.twig so the whole feature stays in one file. #}
+<link rel="stylesheet" href="{{ asset('wallassets/tts.css') }}">
 <div id="tts-player" class="tts-player" data-state="idle">
     <button type="button" id="tts-toggle" class="btn-flat waves-effect tts-btn"
             title="{{ 'entry.view.tts.play'|trans }}"
