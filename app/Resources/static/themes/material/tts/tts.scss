@@ -114,6 +114,24 @@
   }
 }
 
+/* Clear the reader-mode rail so it cannot sit on top of the play button.
+ *
+ * On the entry page the sidebar is .reader-mode, which is 70px wide and only
+ * occupies layout space from 993px up -- below that it is an off-canvas drawer
+ * (translateX(-105%)), so a full-width bar is correct there. 70px matches what
+ * wallabag already applies to its own content at the same breakpoint
+ * (media_queries.scss: .entry main div#content { padding-left: 70px }).
+ *
+ * The rail expands to 260px on hover, which briefly overlaps the bar again --
+ * left alone deliberately, since hovering the nav and pressing play are
+ * mutually exclusive, and reserving 260px permanently would waste a third of
+ * the bar. */
+@media only screen and (min-width: 993px) {
+  .tts-player {
+    left: 70px;
+  }
+}
+
 /* Reserve room so the fixed bar never covers the end of the article. Applied
  * to the article container rather than body, because Materialize's own
  * fixed-action-btn positioning is relative to body and shifts if body padding
