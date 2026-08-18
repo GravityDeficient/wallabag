@@ -282,6 +282,9 @@ entry:
             queued: 'Queued for narration'
             ready: 'Ready to play'
             error: 'Audio unavailable'
+            voice: 'Voice'
+            regenerate: 'Regenerate narration'
+            regenerate_confirm: 'Re-record this article? The current audio is discarded.'
         left_menu:
             back_to_top: Back to top
             back_to_homepage: Back

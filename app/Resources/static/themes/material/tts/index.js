@@ -35,6 +35,8 @@ class Player {
     this.durEl = document.getElementById('tts-duration');
     this.followBtn = document.getElementById('tts-follow');
     this.rateSel = document.getElementById('tts-rate');
+    this.voiceSel = document.getElementById('tts-voice');
+    this.regenBtn = document.getElementById('tts-regen');
 
     this.timings = null;
     this.current = -1;
@@ -44,10 +46,20 @@ class Player {
     this.lastSave = 0;
     this.posKey = `tts:pos:${cfg.entryId}`;
     this.ratePref = 'tts:rate';
+    // Voice is a global preference, not per-article: picking one and then
+    // opening the next article should keep it.
+    this.voicePref = 'tts:voice';
+    this.voice = window.localStorage.getItem(this.voicePref) || '';
   }
 
-  url(path) {
-    return `${this.cfg.base.replace(/\/$/, '')}/entry/${this.cfg.entryId}${path}`;
+  url(path, extra) {
+    const base = `${this.cfg.base.replace(/\/$/, '')}/entry/${this.cfg.entryId}${path}`;
+    const params = new URLSearchParams(extra || {});
+    // Omit when empty so the service applies its configured default rather
+    // than being handed a blank voice.
+    if (this.voice) params.set('voice', this.voice);
+    const qs = params.toString();
+    return qs ? `${base}?${qs}` : base;
   }
 
   status(text) {
@@ -91,6 +103,9 @@ class Player {
       this.seeking = false;
     });
 
+    this.voiceSel.addEventListener('change', () => this.onVoiceChange());
+    this.regenBtn.addEventListener('click', () => this.onRegenerate());
+
     // Persist position often enough that closing the tab mid-article resumes
     // where it left off. 'pagehide' rather than 'unload': the latter does not
     // fire reliably on mobile Safari or when a tab is discarded.
@@ -99,7 +114,78 @@ class Player {
       if (document.visibilityState === 'hidden') this.savePos();
     });
 
+    this.loadVoices();
     this.refreshStatus();
+  }
+
+  async loadVoices() {
+    try {
+      const res = await fetch(
+        `${this.cfg.base.replace(/\/$/, '')}/voices`,
+        { credentials: 'same-origin' },
+      );
+      if (!res.ok) throw new Error(`voices ${res.status}`);
+      const body = await res.json();
+      const names = body.voices || [];
+      if (!names.length) throw new Error('empty voice list');
+      this.voiceSel.innerHTML = '';
+      names.forEach((name) => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        // Strip the sample-file extension; it is an implementation detail of
+        // how the voice was cloned, not something to read in a dropdown.
+        opt.textContent = name.replace(/\.(wav|mp3|flac|ogg)$/i, '');
+        this.voiceSel.appendChild(opt);
+      });
+      // A stored voice the server no longer offers must not silently persist,
+      // or every render would 400 on an unknown voice.
+      if (this.voice && names.indexOf(this.voice) === -1) {
+        this.voice = '';
+        window.localStorage.removeItem(this.voicePref);
+      }
+      this.voiceSel.value = this.voice || body.default || names[0];
+      this.voice = this.voiceSel.value;
+    } catch (e) {
+      // Voice switching is a convenience; playback still works on the default.
+      this.voiceSel.style.display = 'none';
+    }
+  }
+
+  async onVoiceChange() {
+    const next = this.voiceSel.value;
+    if (next === this.voice) return;
+    this.voice = next;
+    window.localStorage.setItem(this.voicePref, next);
+    // A different voice is a different recording, so everything derived from
+    // the old one is discarded rather than reused.
+    this.resetAudio();
+    await this.refreshStatus();
+  }
+
+  async onRegenerate() {
+    if (!window.confirm(this.cfg.strings.regenerate)) return;
+    this.resetAudio();
+    window.localStorage.removeItem(this.posKey);
+    this.status(this.cfg.strings.queued);
+    await fetch(this.url('/render', { force: 'true' }), {
+      method: 'POST', credentials: 'same-origin',
+    }).catch(() => {});
+    const st = await this.waitUntilReady();
+    if (st) await this.refreshStatus();
+  }
+
+  /* Drop the loaded recording and every artefact derived from it. The sentence
+   * spans stay in the DOM -- they are a property of the article text, not of
+   * the audio, and re-marking would nest spans inside spans. */
+  resetAudio() {
+    this.audio.pause();
+    this.audio.removeAttribute('src');
+    this.audio.load();
+    this.timings = null;
+    this.highlight(-1);
+    this.seek.value = '0';
+    this.curEl.textContent = fmt(0);
+    this.durEl.textContent = fmt(0);
   }
 
   async refreshStatus() {

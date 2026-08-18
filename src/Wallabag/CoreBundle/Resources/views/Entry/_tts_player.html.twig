@@ -41,6 +41,14 @@
                 aria-label="{{ 'entry.view.tts.follow'|trans }}">
             <i class="material-icons">vertical_align_center</i>
         </button>
+        {# Populated from the service's /voices at load. Switching voice is a
+           different render, not a playback setting, so it re-checks status. #}
+        <select id="tts-voice" class="tts-rate" aria-label="{{ 'entry.view.tts.voice'|trans }}"></select>
+        <button type="button" id="tts-regen" class="btn-flat waves-effect tts-btn"
+                title="{{ 'entry.view.tts.regenerate'|trans }}"
+                aria-label="{{ 'entry.view.tts.regenerate'|trans }}">
+            <i class="material-icons">refresh</i>
+        </button>
         <select id="tts-rate" class="tts-rate" aria-label="{{ 'entry.view.tts.speed'|trans }}">
             <option value="0.9">0.9x</option>
             <option value="1" selected>1x</option>
@@ -70,7 +78,8 @@
         "preparing": {{ 'entry.view.tts.preparing'|trans|json_encode|raw }},
         "queued": {{ 'entry.view.tts.queued'|trans|json_encode|raw }},
         "ready": {{ 'entry.view.tts.ready'|trans|json_encode|raw }},
-        "error": {{ 'entry.view.tts.error'|trans|json_encode|raw }}
+        "error": {{ 'entry.view.tts.error'|trans|json_encode|raw }},
+        "regenerate": {{ 'entry.view.tts.regenerate_confirm'|trans|json_encode|raw }}
     }
 }
 </script>
